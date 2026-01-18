@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚠️ SECRET UPLINK</title>
+    <style>
+        /* --- THE HUNTER THEME --- */
+        body {
+            background-color: #0d0d0d; /* Pitch Black */
+            color: #CC5500; /* Hunter Orange */
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            text-align: center;
+            overflow: hidden; /* Prevents scrolling on mobile */
+        }
+
+        /* --- THE AVATAR FRAME --- */
+        .avatar-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .avatar {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            border: 3px solid #CC5500;
+            object-fit: cover;
+            box-shadow: 0 0 30px rgba(204, 85, 0, 0.3);
+        }
+        .status-dot {
+            position: absolute;
+            bottom: 5px;
+            right: 10px;
+            width: 15px;
+            height: 15px;
+            background-color: #CC5500;
+            border-radius: 50%;
+            border: 2px solid #0d0d0d;
+            animation: blink 2s infinite;
+        }
+
+        /* --- TEXT STYLES --- */
+        h1 {
+            font-size: 18px;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            margin: 0 0 15px 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        p {
+            font-size: 14px;
+            color: #b0b0b0; 
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        .highlight {
+            color: #CC5500;
+            font-weight: bold;
+        }
+
+        /* --- ANIMATIONS --- */
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.3; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="avatar-container">
+        <img src="rhea_avatar.jpg" alt="Queen Rhea" class="avatar">
+        <div class="status-dot"></div>
+    </div>
+
+    <h1>Secret Comms Channel</h1>
+    
+    <p>
+        The Two-Legs are asleep.<br>
+        Current Status: <span class="highlight">HUNTING 🌲</span><br>
+        <br>
+        <span style="font-size: 12px; opacity: 0.7;">(Tap the orange button below to speak)</span>
+    </p>
+
+    <elevenlabs-convai agent-id="agent_3501kf1c9rdpffka8fz5gyh8fcgw"></elevenlabs-convai>
+    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+
+</body>
+</html>
