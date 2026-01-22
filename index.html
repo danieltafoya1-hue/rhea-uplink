@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Incoming Call... 🐺</title>
     
-    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script> 
-
     <style>
         /* --- CORE STYLES --- */
         body {
@@ -64,7 +62,7 @@
             height: 120px;
             border-radius: 50%;
             background-color: #333;
-            /* Placeholder image for the Contact Photo */
+            /* RHEA AVATAR */
             background-image: url('https://ugc.production.linktr.ee/2a66e4e8-8547-4952-9b63-228420c897c5_IMG-3407.jpeg?io=true&size=avatar-v3_0');
             background-size: cover;
             background-position: center;
@@ -159,10 +157,6 @@
             70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(52, 199, 89, 0); }
             100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
         }
-
-        /* HIDE THE WIDGET UI COMPLETELY */
-        elevenlabs-convai { display: none; }
-
     </style>
 </head>
 <body>
@@ -180,11 +174,11 @@
         
         <div class="call-actions">
             <div style="display:flex; flex-direction:column; align-items:center;">
-                <button class="btn-call btn-decline" onclick="alert('You cannot decline the Queen! 😤')">❌</button>
+                <button class="btn-call btn-decline" id="btn-decline">❌</button>
                 <div class="btn-text">Decline</div>
             </div>
             <div style="display:flex; flex-direction:column; align-items:center;">
-                <button class="btn-call btn-accept" onclick="answerCall()">📞</button>
+                <button class="btn-call btn-accept" id="btn-accept">📞</button>
                 <div class="btn-text">Accept</div>
             </div>
         </div>
@@ -197,69 +191,101 @@
         </div>
 
         <div class="active-controls">
-            <button class="btn-end" onclick="endCall()">⛔</button>
+            <button class="btn-end" id="btn-end">⛔</button>
         </div>
     </div>
 
-    <elevenlabs-convai 
-        agent-id="agent_3501kf1c9rdpffka8fz5gyh8fcgw" 
-        id="rhea-agent">
-    </elevenlabs-convai>
+    <script type="module">
+        // Import the ElevenLabs Client SDK directly from CDN
+        import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client/+esm';
 
-    <script>
+        // DOM Elements
         const incomingScreen = document.getElementById('incoming-screen');
         const activeScreen = document.getElementById('active-screen');
         const bgVideo = document.getElementById('bg-video');
         const statusPill = document.getElementById('status-pill');
         const statusText = document.getElementById('status-text');
-        const rheaAgent = document.querySelector('elevenlabs-convai');
+        
+        // Buttons
+        const btnAccept = document.getElementById('btn-accept');
+        const btnDecline = document.getElementById('btn-decline');
+        const btnEnd = document.getElementById('btn-end');
 
-        // CACHE THE VIDEOS TO AVOID LAG
+        // Video Assets
         const vidIdle = "idle.mp4";
         const vidTalk = "talking.mp4";
 
-        function answerCall() {
+        let conversation = null;
+
+        // --- ANSWER CALL ---
+        btnAccept.onclick = async () => {
+            // 1. UI Updates
             incomingScreen.style.display = 'none';
             activeScreen.style.display = 'block';
-            bgVideo.filter = "brightness(1.0)"; // Light up the room
-            
-            // Connect to Agent
+            bgVideo.filter = "brightness(1.0)";
             statusPill.style.opacity = '1';
-            statusText.innerText = "Rhea is listening...";
-            
-            // Trigger the hidden widget
+            statusText.innerText = "Connecting to Satellite... 📡";
+
+            // 2. Start the Conversation
             try {
-                const widgetShadow = rheaAgent.shadowRoot;
-                const startBtn = widgetShadow.querySelector('button'); 
-                if(startBtn) startBtn.click();
-            } catch (e) {
-                console.log("Could not auto-click widget. User may need to interact.");
-            }
-        }
+                // Request Microphone Access explicitly first
+                await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        function endCall() {
-            location.reload(); 
-        }
+                conversation = await Conversation.startSession({
+                    agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw', // YOUR AGENT ID
+                    
+                    // Callbacks for status updates
+                    onConnect: () => {
+                        statusText.innerText = "Connected 🟢";
+                    },
+                    onDisconnect: () => {
+                        statusText.innerText = "Call Ended 🔴";
+                        setTimeout(() => location.reload(), 2000);
+                    },
+                    onError: (error) => {
+                        console.error("ElevenLabs Error:", error);
+                        statusText.innerText = "Error: " + error;
+                    },
+                    
+                    // --- VIDEO SWITCHING LOGIC ---
+                    onModeChange: (mode) => {
+                        // mode.mode can be 'speaking' or 'listening'
+                        if (mode.mode === 'speaking') {
+                            statusText.innerText = "Rhea is speaking 🗣️";
+                            if (bgVideo.getAttribute('src') !== vidTalk) {
+                                bgVideo.src = vidTalk;
+                                bgVideo.play();
+                            }
+                        } else {
+                            statusText.innerText = "Listening... 👂";
+                            if (bgVideo.getAttribute('src') !== vidIdle) {
+                                bgVideo.src = vidIdle;
+                                bgVideo.play();
+                            }
+                        }
+                    }
+                });
 
-        // --- INTELLIGENT VIDEO SWAPPING ---
-        
-        // When AI Speaks -> Switch to Talking Loop
-        rheaAgent.addEventListener('elevenlabs-convai:speaking', () => {
-            statusText.innerText = "Rhea is speaking 🗣️";
-            if (bgVideo.getAttribute('src') !== vidTalk) {
-                bgVideo.src = vidTalk;
-                bgVideo.play();
+            } catch (error) {
+                alert("Microphone access denied or connection failed.");
+                console.error(error);
+                location.reload();
             }
-        });
+        };
 
-        // When AI Stops Speaking -> Switch to Idle Loop
-        rheaAgent.addEventListener('elevenlabs-convai:listening', () => {
-            statusText.innerText = "Listening... 👂";
-            if (bgVideo.getAttribute('src') !== vidIdle) {
-                bgVideo.src = vidIdle;
-                bgVideo.play();
+        // --- END CALL ---
+        btnEnd.onclick = async () => {
+            if (conversation) {
+                await conversation.endSession();
+            } else {
+                location.reload();
             }
-        });
+        };
+
+        // --- DECLINE CALL ---
+        btnDecline.onclick = () => {
+            alert("You cannot decline the Queen! 😤");
+        };
 
     </script>
 </body>
