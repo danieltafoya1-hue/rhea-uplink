@@ -242,75 +242,67 @@
 
         let conversation = null;
 
-        // --- ANSWER CALL ---
+        // --- ANSWER CALL (SYNCHRONIZED) ---
         btnAccept.onclick = async () => {
-            // 1. UI Updates
+            // 1. UI Updates (Immediate)
             incomingScreen.style.display = 'none';
             activeScreen.style.display = 'block';
             bgVideo.filter = "brightness(1.0)";
             statusPill.style.opacity = '1';
-            statusText.innerText = "Connecting...";
+            statusText.innerText = "Rhea is Howling... 🐺";
 
-            // 2. PLAY REAL HOWL (Masks Latency)
-            // This runs instantly while the AI wakes up
+            // 2. PLAY REAL HOWL (3 Seconds)
             try {
-                introAudio.volume = 0.8; // Set volume
+                introAudio.volume = 1.0; 
                 introAudio.play();
-                // We switch video to 'talking' while the intro howl plays
-                bgVideo.src = vidTalk; 
+                bgVideo.src = vidTalk; // Make her move while howling
                 bgVideo.play();
-                
-                // Switch back to idle after the howl finishes (approx 3-4s)
-                introAudio.onended = () => {
-                     // Only switch back if AI hasn't started speaking yet
-                     if(statusText.innerText !== "Rhea is speaking 🗣️") {
-                         bgVideo.src = vidIdle;
-                         bgVideo.play();
-                     }
-                };
-
             } catch(e) { console.log("Audio play error", e); }
 
-            // 3. Connect to AI
-            try {
-                await navigator.mediaDevices.getUserMedia({ audio: true });
+            // 3. THE SYNC DELAY (3.5 Seconds)
+            // 3s Howl + 0.5s Silence = Perfect Timing
+            setTimeout(async () => {
+                statusText.innerText = "Acquiring Signal... 📡"; 
+                
+                try {
+                    await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                conversation = await Conversation.startSession({
-                    agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw', 
-                    
-                    onConnect: () => {
-                        statusText.innerText = "Connected 🟢";
-                    },
-                    onDisconnect: () => {
-                        statusText.innerText = "Call Ended 🔴";
-                        setTimeout(() => location.reload(), 2000);
-                    },
-                    onError: (error) => {
-                        console.error("ElevenLabs Error:", error);
-                        statusText.innerText = "Error: " + error;
-                    },
-                    onModeChange: (mode) => {
-                        if (mode.mode === 'speaking') {
-                            statusText.innerText = "Rhea is speaking 🗣️";
-                            if (bgVideo.getAttribute('src') !== vidTalk) {
-                                bgVideo.src = vidTalk;
-                                bgVideo.play();
-                            }
-                        } else {
-                            statusText.innerText = "Listening... 👂";
-                            if (bgVideo.getAttribute('src') !== vidIdle) {
-                                bgVideo.src = vidIdle;
-                                bgVideo.play();
+                    conversation = await Conversation.startSession({
+                        agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw', 
+                        
+                        onConnect: () => {
+                            statusText.innerText = "Connected 🟢";
+                        },
+                        onDisconnect: () => {
+                            statusText.innerText = "Call Ended 🔴";
+                            setTimeout(() => location.reload(), 2000);
+                        },
+                        onError: (error) => {
+                            console.error("ElevenLabs Error:", error);
+                            statusText.innerText = "Error: " + error;
+                        },
+                        onModeChange: (mode) => {
+                            if (mode.mode === 'speaking') {
+                                statusText.innerText = "Rhea is speaking 🗣️";
+                                if (bgVideo.getAttribute('src') !== vidTalk) {
+                                    bgVideo.src = vidTalk;
+                                    bgVideo.play();
+                                }
+                            } else {
+                                statusText.innerText = "Listening... 👂";
+                                if (bgVideo.getAttribute('src') !== vidIdle) {
+                                    bgVideo.src = vidIdle;
+                                    bgVideo.play();
+                                }
                             }
                         }
-                    }
-                });
+                    });
 
-            } catch (error) {
-                alert("Connection failed. Check Microphone permissions.");
-                console.error(error);
-                location.reload();
-            }
+                } catch (error) {
+                    alert("Connection failed. Check Microphone permissions.");
+                    location.reload();
+                }
+            }, 3500); // <--- UPDATED: 3500ms
         };
 
         // --- END CALL ---
