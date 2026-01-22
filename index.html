@@ -56,7 +56,7 @@
             padding: 60px 20px 80px 20px;
             box-sizing: border-box;
             background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px); /* KEEPS BLUR FOR INCOMING */
         }
 
         .caller-info {
@@ -67,7 +67,7 @@
             margin-top: 60px;
         }
 
-        /* --- AVATAR (Clean) --- */
+        /* --- AVATAR --- */
         .profile-pic {
             width: 140px;
             height: 140px;
@@ -113,7 +113,7 @@
         .btn-accept { background-color: #34c759; color: white; animation: pulse 1.5s infinite; }
         .btn-text { color: white; margin-top: 10px; font-size: 14px; text-align: center; }
 
-        /* --- ACTIVE SCREEN --- */
+        /* --- ACTIVE SCREEN (FIXED) --- */
         #active-screen {
             z-index: 5;
             position: absolute;
@@ -126,8 +126,10 @@
             justify-content: space-between;
             padding: 60px 20px 80px 20px;
             box-sizing: border-box;
-            background: rgba(0,0,0,0.4); 
-            backdrop-filter: blur(10px);
+            
+            /* REMOVED BACKGROUND & BLUR SO VIDEO IS CLEAR */
+            background: transparent; 
+            backdrop-filter: none; 
         }
 
         .active-controls {
@@ -140,7 +142,6 @@
             z-index: 20;
         }
 
-        /* --- UNIFIED END BUTTON STYLE --- */
         .btn-end {
             width: 75px;
             height: 75px;
@@ -157,7 +158,6 @@
 
         .btn-end:active { transform: scale(0.9); }
         
-        /* --- SHARED ICON STYLE (The White X) --- */
         .icon-x {
             position: relative;
             width: 30px;
@@ -181,6 +181,7 @@
             margin-top: 12px;
             font-size: 14px;
             font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Added shadow for readability over video */
         }
 
         .status-pill {
