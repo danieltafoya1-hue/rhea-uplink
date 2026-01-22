@@ -31,18 +31,31 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        #bg-video {
+        /* --- DOUBLE VIDEO SYSTEM --- */
+        /* Both videos occupy the same space */
+        .fullscreen-video {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: 1;
-            filter: brightness(0.6);
+            transition: opacity 0.2s ease; /* Fast fade to prevent black flash */
+        }
+
+        #vid-idle {
+            z-index: 1; /* Bottom Layer */
+            opacity: 1;
+            filter: brightness(0.6); /* Dimmed for Incoming screen */
             transition: filter 0.5s ease;
         }
 
+        #vid-talk {
+            z-index: 2; /* Top Layer */
+            opacity: 0; /* Hidden by default */
+        }
+
+        /* --- SCREENS --- */
         #incoming-screen {
             z-index: 10;
             position: absolute;
@@ -56,7 +69,7 @@
             padding: 60px 20px 80px 20px;
             box-sizing: border-box;
             background: rgba(0,0,0,0.4);
-            backdrop-filter: blur(10px); /* KEEPS BLUR FOR INCOMING */
+            backdrop-filter: blur(10px);
         }
 
         .caller-info {
@@ -67,7 +80,6 @@
             margin-top: 60px;
         }
 
-        /* --- AVATAR --- */
         .profile-pic {
             width: 140px;
             height: 140px;
@@ -108,12 +120,10 @@
         }
         
         .btn-call:active { transform: scale(0.9); }
-
         .btn-decline { background-color: #ff3b30; color: white; }
         .btn-accept { background-color: #34c759; color: white; animation: pulse 1.5s infinite; }
         .btn-text { color: white; margin-top: 10px; font-size: 14px; text-align: center; }
 
-        /* --- ACTIVE SCREEN (FIXED) --- */
         #active-screen {
             z-index: 5;
             position: absolute;
@@ -126,8 +136,6 @@
             justify-content: space-between;
             padding: 60px 20px 80px 20px;
             box-sizing: border-box;
-            
-            /* REMOVED BACKGROUND & BLUR SO VIDEO IS CLEAR */
             background: transparent; 
             backdrop-filter: none; 
         }
@@ -155,7 +163,6 @@
             box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
             transition: transform 0.2s;
         }
-
         .btn-end:active { transform: scale(0.9); }
         
         .icon-x {
@@ -181,7 +188,7 @@
             margin-top: 12px;
             font-size: 14px;
             font-weight: 500;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8); /* Added shadow for readability over video */
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .status-pill {
@@ -211,8 +218,12 @@
 <body>
 
     <div class="mobile-wrapper">
-        <video id="bg-video" autoplay loop muted playsinline>
+        <video id="vid-idle" class="fullscreen-video" autoplay loop muted playsinline>
             <source src="idle.mp4" type="video/mp4">
+        </video>
+
+        <video id="vid-talk" class="fullscreen-video" loop muted playsinline>
+            <source src="talking.mp4" type="video/mp4">
         </video>
 
         <audio id="intro-audio">
@@ -262,7 +273,11 @@
 
         const incomingScreen = document.getElementById('incoming-screen');
         const activeScreen = document.getElementById('active-screen');
-        const bgVideo = document.getElementById('bg-video');
+        
+        // VIDEO ELEMENTS
+        const vIdle = document.getElementById('vid-idle');
+        const vTalk = document.getElementById('vid-talk');
+        
         const statusPill = document.getElementById('status-pill');
         const statusText = document.getElementById('status-text');
         const introAudio = document.getElementById('intro-audio');
@@ -271,24 +286,39 @@
         const btnDecline = document.getElementById('btn-decline');
         const btnEnd = document.getElementById('btn-end');
 
-        const vidIdle = "idle.mp4";
-        const vidTalk = "talking.mp4";
-
         let conversation = null;
+
+        // --- HELPER: SWITCH VIDEO MODES ---
+        function setVideoMode(mode) {
+            if (mode === 'talking') {
+                // Show Talk, Hide Idle
+                vTalk.style.opacity = '1';
+                vTalk.play(); 
+            } else {
+                // Show Idle, Hide Talk
+                vTalk.style.opacity = '0';
+                vTalk.pause(); // Optional: pause to save battery, or let run for smoother sync
+            }
+        }
 
         // --- ANSWER CALL ---
         btnAccept.onclick = async () => {
             incomingScreen.style.display = 'none';
             activeScreen.style.display = 'flex';
-            bgVideo.filter = "brightness(1.0)";
+            
+            // Brighten the Idle video (which is currently visible)
+            vIdle.style.filter = "brightness(1.0)";
+            
             statusPill.style.opacity = '1';
             statusText.innerText = "Connecting...";
 
             try {
                 introAudio.volume = 1.0; 
                 introAudio.play();
-                bgVideo.src = vidTalk; 
-                bgVideo.play();
+                
+                // Show talking video instantly for the howl
+                setVideoMode('talking');
+
             } catch(e) { console.log("Audio play error", e); }
 
             try {
@@ -312,16 +342,10 @@
                     onModeChange: (mode) => {
                         if (mode.mode === 'speaking') {
                             statusText.innerText = "Rhea is speaking 🗣️";
-                            if (bgVideo.getAttribute('src') !== vidTalk) {
-                                bgVideo.src = vidTalk;
-                                bgVideo.play();
-                            }
+                            setVideoMode('talking');
                         } else {
                             statusText.innerText = "Listening... 👂";
-                            if (bgVideo.getAttribute('src') !== vidIdle) {
-                                bgVideo.src = vidIdle;
-                                bgVideo.play();
-                            }
+                            setVideoMode('idle');
                         }
                     }
                 });
