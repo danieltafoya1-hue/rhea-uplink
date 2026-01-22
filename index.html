@@ -3,98 +3,264 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title> 🐺 SECRET WOLF CLAN 🐺</title>
+    <title>Incoming Call... 🐺</title>
+    
+    <script src="https://elevenlabs.io/convai-widget/index.js" async type="text/javascript"></script> 
+
     <style>
-        /* --- RESET --- */
-        * { box-sizing: border-box; }
-        
+        /* --- CORE STYLES --- */
         body {
-            background-color: #0d0d0d;
+            background-color: #000;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
-            
-            /* --- LAYOUT: FULL SCREEN LOCK --- */
-            /* 100dvh = Exact height of your Pixel screen */
-            height: 100dvh; 
-            width: 100vw;
-            overflow: hidden; /* No scroll */
-            
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- VIDEO BACKGROUND --- */
+        #bg-video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: 1;
+            filter: brightness(0.6);
+            transition: filter 0.5s ease;
+        }
+
+        /* --- SCREEN 1: INCOMING CALL --- */
+        #incoming-screen {
+            z-index: 10;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px 20px 80px 20px;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
+        }
+
+        .caller-info {
             display: flex;
             flex-direction: column;
             align-items: center;
-            
-            /* PADDING: 
-               Top: 20px (Space from bezel)
-               Sides: 15px
-               Bottom: 85px (RESERVED FOR WIDGET - NO MORE, NO LESS) */
-            padding: 20px 15px 85px 15px; 
+            text-align: center;
+            margin-top: 40px;
         }
 
-        /* --- THE FEED (EXPANDS TO FILL) --- */
-        .feed-container {
-            position: relative;
-            width: 100%;
-            max-width: 500px; /* Keeps it looking good on tablet/desktop */
-            
-            /* MAGIC: This tells the image to grow and eat all empty space */
-            flex: 1; 
-            
-            border-radius: 12px; 
-            overflow: hidden; /* Clips the image corners */
-            border: 2px solid #333;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+        .profile-pic {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #333;
+            /* Placeholder image for the Contact Photo */
+            background-image: url('https://ugc.production.linktr.ee/2a66e4e8-8547-4952-9b63-228420c897c5_IMG-3407.jpeg?io=true&size=avatar-v3_0');
+            background-size: cover;
+            background-position: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
-        
-        .feed-image {
+
+        h1 { font-size: 32px; margin: 0; font-weight: 600; }
+        p.subtitle { font-size: 18px; color: #ccc; margin-top: 8px; }
+
+        .call-actions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            max-width: 300px;
+            align-self: center;
+        }
+
+        .btn-call {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            border: none;
+            outline: none;
+        }
+
+        .btn-decline { background-color: #ff3b30; color: white; }
+        .btn-accept { background-color: #34c759; color: white; animation: pulse 1.5s infinite; }
+        .btn-text { color: white; margin-top: 10px; font-size: 14px; text-align: center; }
+
+        /* --- SCREEN 2: ACTIVE CALL --- */
+        #active-screen {
+            z-index: 5;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            object-fit: cover; /* Ensures no black bars, image fills the box */
-            filter: contrast(1.1) brightness(0.9); 
-            display: block;
+            display: none;
         }
 
-        /* --- REC TAG --- */
-        .rec-tag {
+        .active-controls {
             position: absolute;
-            top: 15px;
-            left: 15px;
-            background-color: rgba(0,0,0,0.7);
-            color: #ff0000;
+            bottom: 40px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            z-index: 20;
+        }
+
+        .btn-end {
+            width: 65px;
+            height: 65px;
+            background-color: #ff3b30;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .status-pill {
+            position: absolute;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            padding: 8px 16px;
+            border-radius: 20px;
             font-size: 14px;
-            font-weight: bold;
-            padding: 6px 12px;
-            border-radius: 4px;
             display: flex;
             align-items: center;
             gap: 8px;
-            border: 1px solid rgba(255, 0, 0, 0.3);
-            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.5s;
         }
-        .rec-dot {
-            width: 10px;
-            height: 10px;
-            background-color: #ff0000;
-            border-radius: 50%;
-            animation: blink 1.5s infinite;
+        
+        .dot { width: 8px; height: 8px; background-color: #34c759; border-radius: 50%; }
+
+        @keyframes pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(52, 199, 89, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
         }
 
-        /* --- WIDGET POSITION --- */
-        /* Forces the widget to sit tight in that 85px bottom gap */
-        elevenlabs-convai {
-            bottom: 20px !important; 
-        }
+        /* HIDE THE WIDGET UI COMPLETELY */
+        elevenlabs-convai { display: none; }
 
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
-    <div class="feed-container">
-        <div class="rec-tag"><div class="rec-dot"></div> REC</div>
-        <img src="IMG_6558.jpeg" alt="Live Feed" class="feed-image">
+    <video id="bg-video" autoplay loop muted playsinline>
+        <source src="idle.mp4" type="video/mp4">
+    </video>
+
+    <div id="incoming-screen">
+        <div class="caller-info">
+            <div class="profile-pic"></div>
+            <h1>Rhea 🐺</h1>
+            <p class="subtitle">FaceTime Video...</p>
+        </div>
+        
+        <div class="call-actions">
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <button class="btn-call btn-decline" onclick="alert('You cannot decline the Queen! 😤')">❌</button>
+                <div class="btn-text">Decline</div>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center;">
+                <button class="btn-call btn-accept" onclick="answerCall()">📞</button>
+                <div class="btn-text">Accept</div>
+            </div>
+        </div>
     </div>
 
-    <elevenlabs-convai agent-id="agent_3501kf1c9rdpffka8fz5gyh8fcgw"></elevenlabs-convai>
-    <script src="https://unpkg.com/@elevenlabs/convai-widget-embed" async type="text/javascript"></script>
+    <div id="active-screen">
+        <div class="status-pill" id="status-pill">
+            <div class="dot"></div>
+            <span id="status-text">Connecting...</span>
+        </div>
 
+        <div class="active-controls">
+            <button class="btn-end" onclick="endCall()">⛔</button>
+        </div>
+    </div>
+
+    <elevenlabs-convai 
+        agent-id="agent_3501kf1c9rdpffka8fz5gyh8fcgw" 
+        id="rhea-agent">
+    </elevenlabs-convai>
+
+    <script>
+        const incomingScreen = document.getElementById('incoming-screen');
+        const activeScreen = document.getElementById('active-screen');
+        const bgVideo = document.getElementById('bg-video');
+        const statusPill = document.getElementById('status-pill');
+        const statusText = document.getElementById('status-text');
+        const rheaAgent = document.querySelector('elevenlabs-convai');
+
+        // CACHE THE VIDEOS TO AVOID LAG
+        const vidIdle = "idle.mp4";
+        const vidTalk = "talking.mp4";
+
+        function answerCall() {
+            incomingScreen.style.display = 'none';
+            activeScreen.style.display = 'block';
+            bgVideo.filter = "brightness(1.0)"; // Light up the room
+            
+            // Connect to Agent
+            statusPill.style.opacity = '1';
+            statusText.innerText = "Rhea is listening...";
+            
+            // Trigger the hidden widget
+            try {
+                const widgetShadow = rheaAgent.shadowRoot;
+                const startBtn = widgetShadow.querySelector('button'); 
+                if(startBtn) startBtn.click();
+            } catch (e) {
+                console.log("Could not auto-click widget. User may need to interact.");
+            }
+        }
+
+        function endCall() {
+            location.reload(); 
+        }
+
+        // --- INTELLIGENT VIDEO SWAPPING ---
+        
+        // When AI Speaks -> Switch to Talking Loop
+        rheaAgent.addEventListener('elevenlabs-convai:speaking', () => {
+            statusText.innerText = "Rhea is speaking 🗣️";
+            if (bgVideo.getAttribute('src') !== vidTalk) {
+                bgVideo.src = vidTalk;
+                bgVideo.play();
+            }
+        });
+
+        // When AI Stops Speaking -> Switch to Idle Loop
+        rheaAgent.addEventListener('elevenlabs-convai:listening', () => {
+            statusText.innerText = "Listening... 👂";
+            if (bgVideo.getAttribute('src') !== vidIdle) {
+                bgVideo.src = vidIdle;
+                bgVideo.play();
+            }
+        });
+
+    </script>
 </body>
 </html>
