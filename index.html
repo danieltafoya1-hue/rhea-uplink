@@ -8,7 +8,7 @@
     <style>
         /* --- CORE STYLES --- */
         body {
-            background-color: #111; /* Darker background for desktop */
+            background-color: #111; 
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -24,12 +24,12 @@
         .mobile-wrapper {
             position: relative;
             width: 100%;
-            max-width: 450px; /* Limits width on Desktop */
+            max-width: 450px; 
             height: 100%;
-            max-height: 900px; /* Limits height on huge screens */
+            max-height: 900px;
             background-color: #000;
             overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5); /* Shadow for depth */
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
         /* --- VIDEO BACKGROUND --- */
@@ -70,18 +70,25 @@
             margin-top: 60px;
         }
 
+        /* --- AVATAR --- */
         .profile-pic {
             width: 140px;
             height: 140px;
             border-radius: 50%;
             background-color: #333;
-            /* LOOKS FOR LOCAL FILE NOW */
+            /* Tries to load avatar.jpg, falls back to Grey */
             background-image: url('avatar.jpg'); 
             background-size: cover;
             background-position: center;
             margin-bottom: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.2);
+            
+            /* Center the fallback emoji */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
         }
 
         h1 { font-size: 36px; margin: 0; font-weight: 600; letter-spacing: -0.5px; }
@@ -93,7 +100,7 @@
             width: 100%;
             max-width: 300px;
             align-self: center;
-            margin-bottom: 20px;
+            margin-bottom: 20px; /* Aligns buttons comfortably */
         }
 
         .btn-call {
@@ -125,37 +132,72 @@
             width: 100%;
             height: 100%;
             display: none;
+            
+            /* FLEX LAYOUT FOR PERFECT ALIGNMENT */
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 60px 20px 80px 20px;
+            box-sizing: border-box;
+            background: rgba(0,0,0,0.4); 
+            backdrop-filter: blur(10px);
         }
 
         .active-controls {
-            position: absolute;
-            bottom: 40px;
-            left: 0;
+            align-self: center;
+            margin-bottom: 20px; /* Matches Incoming Screen margin */
             width: 100%;
             display: flex;
-            justify-content: center;
-            gap: 20px;
+            flex-direction: column;
+            align-items: center;
             z-index: 20;
         }
 
+        /* --- REDESIGNED END BUTTON --- */
         .btn-end {
-            width: 65px;
-            height: 65px;
+            width: 75px;
+            height: 75px;
             background-color: #ff3b30;
             border-radius: 50%;
             border: none;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 24px;
             cursor: pointer;
+            box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
+            transition: transform 0.2s;
+        }
+
+        .btn-end:active { transform: scale(0.9); }
+        
+        /* The White X Icon */
+        .icon-x {
+            position: relative;
+            width: 30px;
+            height: 30px;
+        }
+        .icon-x::before, .icon-x::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 30px;
+            height: 4px;
+            background-color: white;
+            border-radius: 2px;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .icon-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+        .btn-label {
+            color: white;
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .status-pill {
-            position: absolute;
-            top: 60px;
-            left: 50%;
-            transform: translateX(-50%);
+            /* Position relative now, handled by flexbox spacer */
+            position: relative; 
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             padding: 10px 20px;
@@ -191,7 +233,7 @@
 
         <div id="incoming-screen">
             <div class="caller-info">
-                <div class="profile-pic"></div>
+                <div class="profile-pic">🐺</div>
                 <h1>Rhea 🐺</h1>
                 <p class="subtitle">FaceTime Video...</p>
             </div>
@@ -209,13 +251,18 @@
         </div>
 
         <div id="active-screen">
-            <div class="status-pill" id="status-pill">
-                <div class="dot"></div>
-                <span id="status-text">Connecting...</span>
+            <div style="margin-top: 60px; width: 100%; display:flex; justify-content:center;">
+                <div class="status-pill" id="status-pill">
+                    <div class="dot"></div>
+                    <span id="status-text">Connecting...</span>
+                </div>
             </div>
 
             <div class="active-controls">
-                <button class="btn-end" id="btn-end">⛔</button>
+                <button class="btn-end" id="btn-end">
+                    <div class="icon-x"></div>
+                </button>
+                <div class="btn-label">End</div>
             </div>
         </div>
     </div>
@@ -223,7 +270,6 @@
     <script type="module">
         import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client/+esm';
 
-        // DOM Elements
         const incomingScreen = document.getElementById('incoming-screen');
         const activeScreen = document.getElementById('active-screen');
         const bgVideo = document.getElementById('bg-video');
@@ -231,81 +277,75 @@
         const statusText = document.getElementById('status-text');
         const introAudio = document.getElementById('intro-audio');
         
-        // Buttons
         const btnAccept = document.getElementById('btn-accept');
         const btnDecline = document.getElementById('btn-decline');
         const btnEnd = document.getElementById('btn-end');
 
-        // Assets
         const vidIdle = "idle.mp4";
         const vidTalk = "talking.mp4";
 
         let conversation = null;
 
-        // --- ANSWER CALL (SYNCHRONIZED) ---
+        // --- ANSWER CALL (INSTANT / PARALLEL) ---
         btnAccept.onclick = async () => {
-            // 1. UI Updates (Immediate)
+            // 1. UI Updates (Instant)
             incomingScreen.style.display = 'none';
-            activeScreen.style.display = 'block';
+            activeScreen.style.display = 'flex'; // Changed to flex to respect layout
             bgVideo.filter = "brightness(1.0)";
             statusPill.style.opacity = '1';
-            statusText.innerText = "Rhea is Howling... 🐺";
+            statusText.innerText = "Connecting...";
 
-            // 2. PLAY REAL HOWL (3 Seconds)
+            // 2. PLAY REAL HOWL (Background Music)
             try {
                 introAudio.volume = 1.0; 
                 introAudio.play();
-                bgVideo.src = vidTalk; // Make her move while howling
+                bgVideo.src = vidTalk; 
                 bgVideo.play();
             } catch(e) { console.log("Audio play error", e); }
 
-            // 3. THE SYNC DELAY (3.5 Seconds)
-            // 3s Howl + 0.5s Silence = Perfect Timing
-            setTimeout(async () => {
-                statusText.innerText = "Acquiring Signal... 📡"; 
-                
-                try {
-                    await navigator.mediaDevices.getUserMedia({ audio: true });
+            // 3. START CONNECTION (IMMEDIATELY)
+            try {
+                await navigator.mediaDevices.getUserMedia({ audio: true });
 
-                    conversation = await Conversation.startSession({
-                        agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw', 
-                        
-                        onConnect: () => {
-                            statusText.innerText = "Connected 🟢";
-                        },
-                        onDisconnect: () => {
-                            statusText.innerText = "Call Ended 🔴";
-                            setTimeout(() => location.reload(), 2000);
-                        },
-                        onError: (error) => {
-                            console.error("ElevenLabs Error:", error);
-                            statusText.innerText = "Error: " + error;
-                        },
-                        onModeChange: (mode) => {
-                            if (mode.mode === 'speaking') {
-                                statusText.innerText = "Rhea is speaking 🗣️";
-                                if (bgVideo.getAttribute('src') !== vidTalk) {
-                                    bgVideo.src = vidTalk;
-                                    bgVideo.play();
-                                }
-                            } else {
-                                statusText.innerText = "Listening... 👂";
-                                if (bgVideo.getAttribute('src') !== vidIdle) {
-                                    bgVideo.src = vidIdle;
-                                    bgVideo.play();
-                                }
+                statusText.innerText = "Acquiring Signal... 📡"; 
+
+                conversation = await Conversation.startSession({
+                    agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw', 
+                    
+                    onConnect: () => {
+                        statusText.innerText = "Connected 🟢";
+                    },
+                    onDisconnect: () => {
+                        statusText.innerText = "Call Ended 🔴";
+                        setTimeout(() => location.reload(), 2000);
+                    },
+                    onError: (error) => {
+                        console.error("ElevenLabs Error:", error);
+                        statusText.innerText = "Error: " + error;
+                    },
+                    onModeChange: (mode) => {
+                        if (mode.mode === 'speaking') {
+                            statusText.innerText = "Rhea is speaking 🗣️";
+                            if (bgVideo.getAttribute('src') !== vidTalk) {
+                                bgVideo.src = vidTalk;
+                                bgVideo.play();
+                            }
+                        } else {
+                            statusText.innerText = "Listening... 👂";
+                            if (bgVideo.getAttribute('src') !== vidIdle) {
+                                bgVideo.src = vidIdle;
+                                bgVideo.play();
                             }
                         }
-                    });
+                    }
+                });
 
-                } catch (error) {
-                    alert("Connection failed. Check Microphone permissions.");
-                    location.reload();
-                }
-            }, 3500); // <--- UPDATED: 3500ms
+            } catch (error) {
+                alert("Connection failed. Check Microphone permissions.");
+                location.reload();
+            }
         };
 
-        // --- END CALL ---
         btnEnd.onclick = async () => {
             if (conversation) {
                 await conversation.endSession();
