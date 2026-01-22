@@ -20,7 +20,6 @@
             overflow: hidden;
         }
 
-        /* --- DESKTOP WRAPPER (The "Phone" Look) --- */
         .mobile-wrapper {
             position: relative;
             width: 100%;
@@ -32,7 +31,6 @@
             box-shadow: 0 0 50px rgba(0,0,0,0.5);
         }
 
-        /* --- VIDEO BACKGROUND --- */
         #bg-video {
             position: absolute;
             top: 0;
@@ -45,7 +43,6 @@
             transition: filter 0.5s ease;
         }
 
-        /* --- SCREEN 1: INCOMING CALL --- */
         #incoming-screen {
             z-index: 10;
             position: absolute;
@@ -70,25 +67,18 @@
             margin-top: 60px;
         }
 
-        /* --- AVATAR --- */
+        /* --- AVATAR (Clean) --- */
         .profile-pic {
             width: 140px;
             height: 140px;
             border-radius: 50%;
             background-color: #333;
-            /* Tries to load avatar.jpg, falls back to Grey */
             background-image: url('avatar.jpg'); 
             background-size: cover;
             background-position: center;
             margin-bottom: 25px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             border: 2px solid rgba(255,255,255,0.2);
-            
-            /* Center the fallback emoji */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 60px;
         }
 
         h1 { font-size: 36px; margin: 0; font-weight: 600; letter-spacing: -0.5px; }
@@ -100,7 +90,7 @@
             width: 100%;
             max-width: 300px;
             align-self: center;
-            margin-bottom: 20px; /* Aligns buttons comfortably */
+            margin-bottom: 20px;
         }
 
         .btn-call {
@@ -123,7 +113,7 @@
         .btn-accept { background-color: #34c759; color: white; animation: pulse 1.5s infinite; }
         .btn-text { color: white; margin-top: 10px; font-size: 14px; text-align: center; }
 
-        /* --- SCREEN 2: ACTIVE CALL --- */
+        /* --- ACTIVE SCREEN --- */
         #active-screen {
             z-index: 5;
             position: absolute;
@@ -132,8 +122,6 @@
             width: 100%;
             height: 100%;
             display: none;
-            
-            /* FLEX LAYOUT FOR PERFECT ALIGNMENT */
             flex-direction: column;
             justify-content: space-between;
             padding: 60px 20px 80px 20px;
@@ -144,7 +132,7 @@
 
         .active-controls {
             align-self: center;
-            margin-bottom: 20px; /* Matches Incoming Screen margin */
+            margin-bottom: 20px;
             width: 100%;
             display: flex;
             flex-direction: column;
@@ -152,7 +140,7 @@
             z-index: 20;
         }
 
-        /* --- REDESIGNED END BUTTON --- */
+        /* --- UNIFIED END BUTTON STYLE --- */
         .btn-end {
             width: 75px;
             height: 75px;
@@ -169,7 +157,7 @@
 
         .btn-end:active { transform: scale(0.9); }
         
-        /* The White X Icon */
+        /* --- SHARED ICON STYLE (The White X) --- */
         .icon-x {
             position: relative;
             width: 30px;
@@ -196,7 +184,6 @@
         }
 
         .status-pill {
-            /* Position relative now, handled by flexbox spacer */
             position: relative; 
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
@@ -233,14 +220,16 @@
 
         <div id="incoming-screen">
             <div class="caller-info">
-                <div class="profile-pic">🐺</div>
+                <div class="profile-pic"></div>
                 <h1>Rhea 🐺</h1>
                 <p class="subtitle">FaceTime Video...</p>
             </div>
             
             <div class="call-actions">
                 <div style="display:flex; flex-direction:column; align-items:center;">
-                    <button class="btn-call btn-decline" id="btn-decline">❌</button>
+                    <button class="btn-call btn-decline" id="btn-decline">
+                        <div class="icon-x"></div>
+                    </button>
                     <div class="btn-text">Decline</div>
                 </div>
                 <div style="display:flex; flex-direction:column; align-items:center;">
@@ -286,16 +275,14 @@
 
         let conversation = null;
 
-        // --- ANSWER CALL (INSTANT / PARALLEL) ---
+        // --- ANSWER CALL ---
         btnAccept.onclick = async () => {
-            // 1. UI Updates (Instant)
             incomingScreen.style.display = 'none';
-            activeScreen.style.display = 'flex'; // Changed to flex to respect layout
+            activeScreen.style.display = 'flex';
             bgVideo.filter = "brightness(1.0)";
             statusPill.style.opacity = '1';
             statusText.innerText = "Connecting...";
 
-            // 2. PLAY REAL HOWL (Background Music)
             try {
                 introAudio.volume = 1.0; 
                 introAudio.play();
@@ -303,10 +290,8 @@
                 bgVideo.play();
             } catch(e) { console.log("Audio play error", e); }
 
-            // 3. START CONNECTION (IMMEDIATELY)
             try {
                 await navigator.mediaDevices.getUserMedia({ audio: true });
-
                 statusText.innerText = "Acquiring Signal... 📡"; 
 
                 conversation = await Conversation.startSession({
@@ -339,7 +324,6 @@
                         }
                     }
                 });
-
             } catch (error) {
                 alert("Connection failed. Check Microphone permissions.");
                 location.reload();
