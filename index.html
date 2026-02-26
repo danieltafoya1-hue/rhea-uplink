@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Incoming Call... 🐺</title>
-    
+
     <style>
         /* --- CORE STYLES --- */
         body {
-            background-color: #111; 
+            background-color: #111;
             color: white;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
@@ -23,12 +24,12 @@
         .mobile-wrapper {
             position: relative;
             width: 100%;
-            max-width: 450px; 
+            max-width: 450px;
             height: 100%;
             max-height: 900px;
             background-color: #000;
             overflow: hidden;
-            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
         }
 
         /* --- DOUBLE VIDEO SYSTEM --- */
@@ -40,19 +41,24 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: opacity 0.2s ease; /* Fast fade to prevent black flash */
+            /* Very fast fade so it snaps open and closed tightly to the audio */
+            transition: opacity 0.05s ease;
         }
 
         #vid-idle {
-            z-index: 1; /* Bottom Layer */
+            z-index: 1;
+            /* Bottom Layer */
             opacity: 1;
-            filter: brightness(0.6); /* Dimmed for Incoming screen */
+            filter: brightness(0.6);
+            /* Dimmed for Incoming screen */
             transition: filter 0.5s ease;
         }
 
         #vid-talk {
-            z-index: 2; /* Top Layer */
-            opacity: 0; /* Hidden by default */
+            z-index: 2;
+            /* Top Layer */
+            opacity: 0;
+            /* Hidden by default */
         }
 
         /* --- SCREENS --- */
@@ -68,7 +74,7 @@
             justify-content: space-between;
             padding: 60px 20px 80px 20px;
             box-sizing: border-box;
-            background: rgba(0,0,0,0.4);
+            background: rgba(0, 0, 0, 0.4);
             backdrop-filter: blur(10px);
         }
 
@@ -85,16 +91,26 @@
             height: 140px;
             border-radius: 50%;
             background-color: #333;
-            background-image: url('avatar.jpg'); 
+            background-image: url('avatar.jpg');
             background-size: cover;
             background-position: center;
             margin-bottom: 25px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 2px solid rgba(255,255,255,0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid rgba(255, 255, 255, 0.2);
         }
 
-        h1 { font-size: 36px; margin: 0; font-weight: 600; letter-spacing: -0.5px; }
-        p.subtitle { font-size: 18px; color: rgba(255,255,255,0.8); margin-top: 8px; }
+        h1 {
+            font-size: 36px;
+            margin: 0;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        p.subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.8);
+            margin-top: 8px;
+        }
 
         .call-actions {
             display: flex;
@@ -118,11 +134,28 @@
             border: none;
             outline: none;
         }
-        
-        .btn-call:active { transform: scale(0.9); }
-        .btn-decline { background-color: #ff3b30; color: white; }
-        .btn-accept { background-color: #34c759; color: white; animation: pulse 1.5s infinite; }
-        .btn-text { color: white; margin-top: 10px; font-size: 14px; text-align: center; }
+
+        .btn-call:active {
+            transform: scale(0.9);
+        }
+
+        .btn-decline {
+            background-color: #ff3b30;
+            color: white;
+        }
+
+        .btn-accept {
+            background-color: #34c759;
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+
+        .btn-text {
+            color: white;
+            margin-top: 10px;
+            font-size: 14px;
+            text-align: center;
+        }
 
         #active-screen {
             z-index: 5;
@@ -136,8 +169,7 @@
             justify-content: space-between;
             padding: 60px 20px 80px 20px;
             box-sizing: border-box;
-            background: transparent; 
-            backdrop-filter: none; 
+            background: transparent;
         }
 
         .active-controls {
@@ -161,16 +193,16 @@
             align-items: center;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(255, 59, 48, 0.4);
-            transition: transform 0.2s;
         }
-        .btn-end:active { transform: scale(0.9); }
-        
+
         .icon-x {
             position: relative;
             width: 30px;
             height: 30px;
         }
-        .icon-x::before, .icon-x::after {
+
+        .icon-x::before,
+        .icon-x::after {
             content: '';
             position: absolute;
             top: 50%;
@@ -181,40 +213,58 @@
             border-radius: 2px;
             transform: translate(-50%, -50%) rotate(45deg);
         }
-        .icon-x::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+        .icon-x::after {
+            transform: translate(-50%, -50%) rotate(-45deg);
+        }
 
         .btn-label {
             color: white;
             margin-top: 12px;
             font-size: 14px;
             font-weight: 500;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         .status-pill {
-            position: relative; 
             background: rgba(255, 255, 255, 0.2);
             backdrop-filter: blur(10px);
             padding: 10px 20px;
             border-radius: 30px;
             font-size: 14px;
-            font-weight: 500;
             display: flex;
             align-items: center;
             gap: 10px;
             opacity: 0;
             transition: opacity 0.5s;
         }
-        
-        .dot { width: 8px; height: 8px; background-color: #34c759; border-radius: 50%; box-shadow: 0 0 10px #34c759; }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background-color: #34c759;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #34c759;
+        }
 
         @keyframes pulse {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 15px rgba(52, 199, 89, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(52, 199, 89, 0); }
+            0% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(52, 199, 89, 0.7);
+            }
+
+            70% {
+                transform: scale(1.1);
+                box-shadow: 0 0 0 15px rgba(52, 199, 89, 0);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(52, 199, 89, 0);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="mobile-wrapper">
@@ -222,7 +272,8 @@
             <source src="idle.mp4" type="video/mp4">
         </video>
 
-        <video id="vid-talk" class="fullscreen-video" loop muted playsinline>
+        <!-- The talking video runs continuously in the background, we just toggle its opacity tightly -->
+        <video id="vid-talk" class="fullscreen-video" autoplay loop muted playsinline>
             <source src="talking.mp4" type="video/mp4">
         </video>
 
@@ -236,7 +287,7 @@
                 <h1>Rhea 🐺</h1>
                 <p class="subtitle">FaceTime Video...</p>
             </div>
-            
+
             <div class="call-actions">
                 <div style="display:flex; flex-direction:column; align-items:center;">
                     <button class="btn-call btn-decline" id="btn-decline">
@@ -273,61 +324,56 @@
 
         const incomingScreen = document.getElementById('incoming-screen');
         const activeScreen = document.getElementById('active-screen');
-        
+
         // VIDEO ELEMENTS
         const vIdle = document.getElementById('vid-idle');
         const vTalk = document.getElementById('vid-talk');
-        
+
         const statusPill = document.getElementById('status-pill');
         const statusText = document.getElementById('status-text');
         const introAudio = document.getElementById('intro-audio');
-        
-        const btnAccept = document.getElementById('btn-accept');
-        const btnDecline = document.getElementById('btn-decline');
-        const btnEnd = document.getElementById('btn-end');
 
         let conversation = null;
+        let syncTimeouts = [];
 
         // --- HELPER: SWITCH VIDEO MODES ---
         function setVideoMode(mode) {
             if (mode === 'talking') {
-                // Show Talk, Hide Idle
                 vTalk.style.opacity = '1';
-                vTalk.play(); 
             } else {
-                // Show Idle, Hide Talk
                 vTalk.style.opacity = '0';
-                vTalk.pause(); // Optional: pause to save battery, or let run for smoother sync
             }
         }
 
-        // --- ANSWER CALL ---
-        btnAccept.onclick = async () => {
+        function clearSync() {
+            syncTimeouts.forEach(clearTimeout);
+            syncTimeouts = [];
+        }
+
+        document.getElementById('btn-accept').onclick = async () => {
             incomingScreen.style.display = 'none';
             activeScreen.style.display = 'flex';
-            
+
             // Brighten the Idle video (which is currently visible)
             vIdle.style.filter = "brightness(1.0)";
-            
+
             statusPill.style.opacity = '1';
             statusText.innerText = "Connecting...";
 
             try {
-                introAudio.volume = 1.0; 
+                introAudio.volume = 1.0;
                 introAudio.play();
-                
-                // Show talking video instantly for the howl
-                setVideoMode('talking');
-
-            } catch(e) { console.log("Audio play error", e); }
+                setVideoMode('talking'); // howl simulation
+                setTimeout(() => setVideoMode('idle'), 2000);
+            } catch (e) { console.log("Audio play error", e); }
 
             try {
                 await navigator.mediaDevices.getUserMedia({ audio: true });
-                statusText.innerText = "Acquiring Signal... 📡"; 
+                statusText.innerText = "Acquiring Signal... 📡";
 
                 conversation = await Conversation.startSession({
-                    agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw', 
-                    
+                    agentId: 'agent_3501kf1c9rdpffka8fz5gyh8fcgw',
+
                     onConnect: () => {
                         statusText.innerText = "Connected 🟢";
                     },
@@ -342,11 +388,59 @@
                     onModeChange: (mode) => {
                         if (mode.mode === 'speaking') {
                             statusText.innerText = "Rhea is speaking 🗣️";
+                            // Fallback speaking mode if audio_alignment doesn't trigger
                             setVideoMode('talking');
                         } else {
                             statusText.innerText = "Listening... 👂";
+                            clearSync();
                             setVideoMode('idle');
                         }
+                    },
+                    // This is the new callback the Elevenlabs assistant suggested!
+                    onMessage: (message) => {
+                        try {
+                            // Extract object if it comes as a string, check if it has audio_alignment
+                            const msg = typeof message === 'string' ? JSON.parse(message) : message;
+
+                            // Different ElevenLabs SDK versions structure this slightly differently, 
+                            // check if 'audio_alignment' exists
+                            let alignment = null;
+                            if (msg && msg.audio_alignment) alignment = msg.audio_alignment;
+                            if (msg && msg.message && msg.message.audio_alignment) alignment = msg.message.audio_alignment;
+                            if (msg && msg.type === 'audio_alignment') alignment = msg; // sometimes it's at the root
+
+                            if (alignment) {
+                                // We received character timings! 
+                                // Override the fallback constant 'talking' mode
+                                clearSync();
+                                setVideoMode('idle');
+
+                                // Different SDK versions might use snake_case or camelCase:
+                                const chars = alignment.chars || alignment.characters || [];
+                                const startTimes = alignment.charStartTimesMs || alignment.char_start_times_ms || [];
+                                const durations = alignment.charDurationsMs || alignment.char_durations_ms || [];
+
+                                for (let i = 0; i < chars.length; i++) {
+                                    const char = chars[i];
+                                    // Ignore showing video for spaces or silent punctuation
+                                    const isSilent = !char || char.trim() === '' || '.,!?'.includes(char);
+
+                                    if (!isSilent) {
+                                        // Show the talking video EXACTLY when the syllable starts playing
+                                        const tShow = setTimeout(() => {
+                                            setVideoMode('talking');
+                                        }, startTimes[i]);
+
+                                        // Hide it instantly back to the Idle video when the syllable ends
+                                        const tHide = setTimeout(() => {
+                                            setVideoMode('idle');
+                                        }, startTimes[i] + durations[i]);
+
+                                        syncTimeouts.push(tShow, tHide);
+                                    }
+                                }
+                            }
+                        } catch (e) { /* ignore parse errors */ }
                     }
                 });
             } catch (error) {
@@ -355,18 +449,13 @@
             }
         };
 
-        btnEnd.onclick = async () => {
-            if (conversation) {
-                await conversation.endSession();
-            } else {
-                location.reload();
-            }
+        document.getElementById('btn-end').onclick = async () => {
+            if (conversation) await conversation.endSession();
+            else location.reload();
         };
 
-        btnDecline.onclick = () => {
-            alert("You cannot decline the Queen! 😤");
-        };
-
+        document.getElementById('btn-decline').onclick = () => alert("You cannot decline the Queen! 😤");
     </script>
 </body>
+
 </html>
